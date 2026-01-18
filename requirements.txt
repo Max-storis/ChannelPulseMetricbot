@@ -6,4 +6,3 @@ pandas==2.2.0
 matplotlib==3.8.0
 pytz==2024.1
 numpy==1.26.2
-python-dotenv==1.0.1
