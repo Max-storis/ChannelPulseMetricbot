@@ -349,7 +349,7 @@ async def generate_ai_recommendations(channel_name: str, df: pd.DataFrame, audie
                     "content": prompt,
                 }
             ],
-            model="llama3-8b-8192",  # Актуальная модель
+            model="llama-3.1-8b-instant",  # Актуальная модель
             temperature=0.3,
             max_tokens=500,
         )
