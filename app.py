@@ -116,7 +116,7 @@ async def fetch_channel_data(channel_name: str, limit: int = 15) -> Optional[pd.
         except Exception as e:
             continue
     
-    if not
+    if not date:
         st.warning(f"⚠️ Не удалось извлечь достаточно данных из канала @{channel_name}. Нужно минимум 3 поста.")
         return None
     
