@@ -1,5 +1,19 @@
+# Секретные файлы
 .env
 sessions/
+*.session
+*.session-journal
+
+# Виртуальное окружение
 .venv/
+venv/
+
+# Кэш Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+
+# IDE
+.idea/
+.vscode/
