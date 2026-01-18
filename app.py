@@ -105,8 +105,8 @@ async def fetch_channel_data(channel_name: str, limit: int = 15) -> Optional[pd.
         except Exception as e:
             continue
     
-    if not 
-        st.warning(f"⚠️ Недостаточно данных для @{channel_name} (нужно минимум 3 поста)")
+    if not data:
+        st.warning(f"⚠️ Не удалось извлечь достаточно данных из канала @{channel_name}. Нужно минимум 3 поста.")
         return None
     
     return pd.DataFrame(data)
@@ -458,7 +458,7 @@ if st.button("🚀 Запустить глубокий анализ (15 пост
         with st.spinner("Загружаю данные о подписчиках..."):
             audience_data = get_telemetr_data(channel_username)
         
-        if audience_
+        if audience_data:
             col1, col2, col3, col4 = st.columns(4)
             with col1:
                 st.metric("Пол", f"{audience_data['gender']['male']}% ♂️")
