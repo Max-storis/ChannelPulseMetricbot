@@ -156,7 +156,7 @@ def get_telemetr_data(channel_name: str) -> Optional[Dict]:
     
     return None
 
-# ИСПРАВЛЕНО: audience_date -> audience_data
+# ИСПРАВЛЕНО: правильная аннотация типа
 def detect_fake_audience(df: pd.DataFrame, audience_data: Optional[Dict] = None) -> Dict:
     """
     Анализ на наличие накруток и ботов
@@ -190,14 +190,12 @@ def detect_fake_audience(df: pd.DataFrame, audience_data: Optional[Dict] = None)
         results["reasons"].append("🚨 Слишком равномерное распределение по времени публикаций")
     
     # 3. Анализ вовлеченности
-    # ИСПРАВЛЕНО: добавлена закрывающая скобка и двоеточие
     if audience_data and "engagement" in audience_data:
         if audience_data["engagement"] < 1.0:
             results["fake_probability"] += 20
             results["reasons"].append(f"🚨 Низкая вовлеченность: {audience_data['engagement']}% (норма > 3%)")
     
     # 4. Анализ географии
-    # ИСПРАВЛЕНО: добавлена закрывающая скобка и двоеточие
     if audience_data and "top_countries" in audience_data:
         if len(audience_data["top_countries"]) > 0:
             top_country = audience_data["top_countries"][0]["percent"]
@@ -206,7 +204,6 @@ def detect_fake_audience(df: pd.DataFrame, audience_data: Optional[Dict] = None)
                 results["reasons"].append(f"🚨 Слишком высокая концентрация аудитории в одной стране ({top_country}%)")
     
     # 5. Анализ качества подписчиков
-    # ИСПРАВЛЕНО: добавлена закрывающая скобка и двоеточие
     if audience_data and "activity" in audience_data:
         if audience_data["activity"] < 0.4:
             results["fake_probability"] += 10
@@ -225,7 +222,7 @@ def detect_fake_audience(df: pd.DataFrame, audience_data: Optional[Dict] = None)
     
     return results
 
-# ИСПРАВЛЕНО: добавлено двоеточие после audience_data
+# ИСПРАВЛЕНО: правильная аннотация типа
 def analyze_audience_quality(df: pd.DataFrame, audience_data: Optional[Dict] = None) -> Dict:
     """Анализ качества аудитории"""
     results = {
@@ -235,7 +232,6 @@ def analyze_audience_quality(df: pd.DataFrame, audience_data: Optional[Dict] = N
     }
     
     # 1. Анализ активности
-    # ИСПРАВЛЕНО: добавлена закрывающая скобка и двоеточие
     if audience_data and "activity" in audience_data:
         activity_score = audience_data["activity"] * 100
         if activity_score < 40:
@@ -246,7 +242,6 @@ def analyze_audience_quality(df: pd.DataFrame, audience_data: Optional[Dict] = N
             results["issues"].append(f"📉 Средняя активность аудитории: {activity_score:.0f}%")
     
     # 2. Анализ вовлеченности
-    # ИСПРАВЛЕНО: добавлена закрывающая скобка и двоеточие
     if audience_data and "engagement" in audience_data:
         engagement_score = audience_data["engagement"]
         if engagement_score < 2.0:
@@ -295,7 +290,7 @@ def analyze_audience_quality(df: pd.DataFrame, audience_data: Optional[Dict] = N
     
     return results
 
-# ИСПРАВЛЕНО: добавлено двоеточие после audience_data
+# ИСПРАВЛЕНО: правильная аннотация типа
 async def generate_ai_recommendations(channel_name: str, df: pd.DataFrame, audience_data: Optional[Dict] = None) -> str:
     """
     Генерация рекомендаций через Groq Llama3
@@ -304,7 +299,7 @@ async def generate_ai_recommendations(channel_name: str, df: pd.DataFrame, audie
     if not groq_client:
         return """
         ℹ️ **Для ИИ-анализа настройте Groq API:**  
-        1. Получите ключ на https://console.groq.com
+        1. Получите ключ на https://console.groq.com  
         2. Добавьте переменную `GROQ_API_KEY` в Render Environment  
         3. Перезапустите сервис
         """
@@ -346,7 +341,7 @@ async def generate_ai_recommendations(channel_name: str, df: pd.DataFrame, audie
         Не добавляй лишней информации. Будь конкретным и практичным.
         """
         
-        # Запрос к Groq Llama3
+        # Запрос к Groq Llama3 (актуальная модель)
         chat_completion = groq_client.chat.completions.create(
             messages=[
                 {
@@ -354,7 +349,7 @@ async def generate_ai_recommendations(channel_name: str, df: pd.DataFrame, audie
                     "content": prompt,
                 }
             ],
-            model="llama3-70b-8192",
+            model="llama3-8b-8192",  # Актуальная модель
             temperature=0.3,
             max_tokens=500,
         )
@@ -525,7 +520,7 @@ if st.button("🚀 Запустить глубокий анализ (15 пост
         st.divider()
         st.subheader("🔍 Анализ на наличие накруток")
         
-        fake_analysis = detect_fake_audience(df, audience_data)
+        fake_analysis = detect_fake_audience(df, audience_data if 'audience_data' in locals() else None)
         
         fake_color = "#EF5350" if fake_analysis["fake_probability"] > 30 else "#FFA726" if fake_analysis["fake_probability"] > 10 else "#4CAF50"
         
@@ -568,18 +563,18 @@ if st.button("🚀 Запустить глубокий анализ (15 пост
         
         # ===== 8. ИИ-РЕКОМЕНДАЦИИ ОТ GROQ =====
         st.divider()
-        st.subheader("🤖 ИИ-анализ от Groq Llama3 (70B параметров)")
+        st.subheader("🤖 ИИ-анализ от Groq Llama3 (8B параметров)")
         
         with st.spinner("Генерирую персональные рекомендации через Groq AI..."):
             if groq_client:
                 # ИСПРАВЛЕНО: заменен await на asyncio.run
-                ai_recommendations = asyncio.run(generate_ai_recommendations(channel_username, df, audience_data))
+                ai_recommendations = asyncio.run(generate_ai_recommendations(channel_username, df, audience_data if 'audience_data' in locals() else None))
                 st.markdown(ai_recommendations)
             else:
                 st.info("""
                 ℹ️ **ИИ-анализ недоступен**  
                 Для включения ИИ-рекомендаций:  
-                1. Получите Groq API ключ на https://console.groq.com
+                1. Получите Groq API ключ на https://console.groq.com  
                 2. Добавьте в Render Environment переменную `GROQ_API_KEY`  
                 3. Перезапустите сервис
                 """)
@@ -588,11 +583,21 @@ if st.button("🚀 Запустить глубокий анализ (15 пост
         st.divider()
         st.subheader("🎯 Ваша стратегия роста")
         
+        # Добавляем защиту от NameError
+        interests_list = interests[:3] if 'interests' in locals() and interests else [
+            {"name": "Python"}, 
+            {"name": "Инструкции"}, 
+            {"name": "AI"}
+        ]
+        
+        # Формируем строку с ключевыми словами
+        key_words = ', '.join([i['name'] for i in interests_list])
+
         st.success(f"""
         🚀 **Комплексный план для @{channel_username}:**
         
         1. **Время публикаций:** {best_hour}:00 МСК (+{uplift:.0f}% охват)
-        2. **Контент-стратегия:** Добавьте ключевые слова: {', '.join([i['name'] for i in interests[:3]])}
+        2. **Контент-стратегия:** Добавьте ключевые слова: {key_words}
         3. **Монетизация:** Установите цену {optimized_earnings:.0f} ₽ за пост
         4. **Оптимизация аудитории:** {quality_analysis['recommendations'][0] if quality_analysis['recommendations'] else "Стандартная оптимизация"}
         
@@ -612,13 +617,13 @@ with st.sidebar:
     st.markdown("### 🔑 Настройка API")
     st.markdown("""
     **Groq API (обязательно):**
-    1. Зарегистрируйтесь на https://console.groq.com
+    1. Зарегистрируйтесь на https://console.groq.com  
     2. Создайте API-ключ
     3. В Render добавьте переменную:  
        `GROQ_API_KEY=ваш_ключ`
     
     **Telemetr API (опционально):**
-    1. https://telemetr.io/api
+    1. https://telemetr.io/api  
     2. Добавьте в Render:  
        `TELEMETR_API_KEY=ваш_ключ`
     """)
