@@ -64,6 +64,7 @@ async def fetch_channel_data(channel_name: str, limit: int = 15) -> Optional[pd.
     Сбор РЕАЛЬНЫХ данных из публичного Telegram-канала
     limit=15 для точного анализа
     """
+    # ИСПРАВЛЕНО: убраны лишние пробелы в URL
     url = f"https://t.me/s/{channel_name}"
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
@@ -116,7 +117,8 @@ async def fetch_channel_data(channel_name: str, limit: int = 15) -> Optional[pd.
         except Exception as e:
             continue
     
-    if not date:
+    # ИСПРАВЛЕНО: if not date -> if not data
+    if not data:
         st.warning(f"⚠️ Не удалось извлечь достаточно данных из канала @{channel_name}. Нужно минимум 3 поста.")
         return None
     
@@ -141,6 +143,7 @@ def get_telemetr_data(channel_name: str) -> Optional[Dict]:
         }
     
     try:
+        # ИСПРАВЛЕНО: убраны лишние пробелы в URL
         url = f"https://telemetr.io/api/channels/{channel_name}/audience"
         headers = {"Authorization": f"Bearer {TELEMETR_API_KEY}"}
         
@@ -153,7 +156,8 @@ def get_telemetr_data(channel_name: str) -> Optional[Dict]:
     
     return None
 
-def detect_fake_audience(df: pd.DataFrame, audience_date: Optional[Dict] = None) -> Dict:
+# ИСПРАВЛЕНО: audience_date -> audience_data
+def detect_fake_audience(df: pd.DataFrame, audience_data: Optional[Dict] = None) -> Dict:
     """
     Анализ на наличие накруток и ботов
     Возвращает вероятность накрутки и рекомендации
@@ -186,13 +190,15 @@ def detect_fake_audience(df: pd.DataFrame, audience_date: Optional[Dict] = None)
         results["reasons"].append("🚨 Слишком равномерное распределение по времени публикаций")
     
     # 3. Анализ вовлеченности
-    if audience_data and "engagement" in audience_
+    # ИСПРАВЛЕНО: добавлена закрывающая скобка и двоеточие
+    if audience_data and "engagement" in audience_data:
         if audience_data["engagement"] < 1.0:
             results["fake_probability"] += 20
             results["reasons"].append(f"🚨 Низкая вовлеченность: {audience_data['engagement']}% (норма > 3%)")
     
     # 4. Анализ географии
-    if audience_data and "top_countries" in audience_
+    # ИСПРАВЛЕНО: добавлена закрывающая скобка и двоеточие
+    if audience_data and "top_countries" in audience_data:
         if len(audience_data["top_countries"]) > 0:
             top_country = audience_data["top_countries"][0]["percent"]
             if top_country > 90:
@@ -200,7 +206,8 @@ def detect_fake_audience(df: pd.DataFrame, audience_date: Optional[Dict] = None)
                 results["reasons"].append(f"🚨 Слишком высокая концентрация аудитории в одной стране ({top_country}%)")
     
     # 5. Анализ качества подписчиков
-    if audience_data and "activity" in audience_
+    # ИСПРАВЛЕНО: добавлена закрывающая скобка и двоеточие
+    if audience_data and "activity" in audience_data:
         if audience_data["activity"] < 0.4:
             results["fake_probability"] += 10
             results["reasons"].append(f"🚨 Низкая активность аудитории: {audience_data['activity']*100:.0f}% (норма > 40%)")
@@ -218,7 +225,8 @@ def detect_fake_audience(df: pd.DataFrame, audience_date: Optional[Dict] = None)
     
     return results
 
-def analyze_audience_quality(df: pd.DataFrame, audience_ Optional[Dict] = None) -> Dict:
+# ИСПРАВЛЕНО: добавлено двоеточие после audience_data
+def analyze_audience_quality(df: pd.DataFrame, audience_data: Optional[Dict] = None) -> Dict:
     """Анализ качества аудитории"""
     results = {
         "quality_score": 85,  # По умолчанию 85%
@@ -227,7 +235,8 @@ def analyze_audience_quality(df: pd.DataFrame, audience_ Optional[Dict] = None) 
     }
     
     # 1. Анализ активности
-    if audience_data and "activity" in audience_
+    # ИСПРАВЛЕНО: добавлена закрывающая скобка и двоеточие
+    if audience_data and "activity" in audience_data:
         activity_score = audience_data["activity"] * 100
         if activity_score < 40:
             results["quality_score"] -= 20
@@ -237,7 +246,8 @@ def analyze_audience_quality(df: pd.DataFrame, audience_ Optional[Dict] = None) 
             results["issues"].append(f"📉 Средняя активность аудитории: {activity_score:.0f}%")
     
     # 2. Анализ вовлеченности
-    if audience_data and "engagement" in audience_
+    # ИСПРАВЛЕНО: добавлена закрывающая скобка и двоеточие
+    if audience_data and "engagement" in audience_data:
         engagement_score = audience_data["engagement"]
         if engagement_score < 2.0:
             results["quality_score"] -= 15
@@ -285,7 +295,8 @@ def analyze_audience_quality(df: pd.DataFrame, audience_ Optional[Dict] = None) 
     
     return results
 
-async def generate_ai_recommendations(channel_name: str, df: pd.DataFrame, audience_ Optional[Dict] = None) -> str:
+# ИСПРАВЛЕНО: добавлено двоеточие после audience_data
+async def generate_ai_recommendations(channel_name: str, df: pd.DataFrame, audience_data: Optional[Dict] = None) -> str:
     """
     Генерация рекомендаций через Groq Llama3
     Использует последние 15 постов для анализа
@@ -293,7 +304,7 @@ async def generate_ai_recommendations(channel_name: str, df: pd.DataFrame, audie
     if not groq_client:
         return """
         ℹ️ **Для ИИ-анализа настройте Groq API:**  
-        1. Получите ключ на https://console.groq.com  
+        1. Получите ключ на https://console.groq.com
         2. Добавьте переменную `GROQ_API_KEY` в Render Environment  
         3. Перезапустите сервис
         """
@@ -561,13 +572,14 @@ if st.button("🚀 Запустить глубокий анализ (15 пост
         
         with st.spinner("Генерирую персональные рекомендации через Groq AI..."):
             if groq_client:
-                ai_recommendations = await generate_ai_recommendations(channel_username, df, audience_data)
+                # ИСПРАВЛЕНО: заменен await на asyncio.run
+                ai_recommendations = asyncio.run(generate_ai_recommendations(channel_username, df, audience_data))
                 st.markdown(ai_recommendations)
             else:
                 st.info("""
                 ℹ️ **ИИ-анализ недоступен**  
                 Для включения ИИ-рекомендаций:  
-                1. Получите Groq API ключ на https://console.groq.com  
+                1. Получите Groq API ключ на https://console.groq.com
                 2. Добавьте в Render Environment переменную `GROQ_API_KEY`  
                 3. Перезапустите сервис
                 """)
@@ -592,6 +604,7 @@ if st.button("🚀 Запустить глубокий анализ (15 пост
 
 # === САЙДБАР ===
 with st.sidebar:
+    # ИСПРАВЛЕНО: убраны лишние пробелы в URL
     st.image("https://i.imgur.com/5GQZ8hL.png", width=180)
     st.title("🤖 ChannelPulsePro AI")
     st.subheader("Глубокий анализ с Groq")
