@@ -153,7 +153,7 @@ def get_telemetr_data(channel_name: str) -> Optional[Dict]:
     
     return None
 
-def detect_fake_audience(df: pd.DataFrame, audience_ Optional[Dict] = None) -> Dict:
+def detect_fake_audience(df: pd.DataFrame, audience_date: Optional[Dict] = None) -> Dict:
     """
     Анализ на наличие накруток и ботов
     Возвращает вероятность накрутки и рекомендации
